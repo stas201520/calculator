@@ -1,0 +1,284 @@
+<!DOCTYPE html>
+<html lang="uk">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Калькулятор фарбування авто</title>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
+    <style>
+        * {
+            box-sizing: border-box;
+            font-family: 'Segoe UI', Arial, sans-serif;
+        }
+        body {
+            background-color: #f5f5f5;
+            margin: 0;
+            padding: 16px;
+            color: #333;
+        }
+        .container {
+            max-width: 500px;
+            margin: 0 auto;
+            background: white;
+            padding: 20px;
+            border-radius: 10px;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+        }
+        h1 {
+            font-size: 22px;
+            text-align: center;
+            margin-bottom: 20px;
+        }
+        fieldset {
+            border: none;
+            padding: 0;
+            margin: 0;
+        }
+        .drop-search {
+            position: relative;
+        }
+        .drop-search input {
+            width: 100%;
+            padding: 12px;
+            border: 1px solid #ddd;
+            border-radius: 8px;
+            font-size: 16px;
+        }
+        .search-result-list {
+            display: none;
+            position: absolute;
+            width: 100%;
+            max-height: 300px;
+            overflow-y: auto;
+            background: white;
+            border: 1px solid #ddd;
+            border-radius: 8px;
+            margin-top: 5px;
+            z-index: 100;
+            box-shadow: 0 4px 12px rgba(0,0,0,0.1);
+            padding: 0;
+            list-style: none;
+        }
+        .search-focus .search-result-list {
+            display: block;
+        }
+        .search-result-list li {
+            padding: 10px;
+            border-bottom: 1px solid #eee;
+            cursor: pointer;
+        }
+        .search-result-list li:hover {
+            background-color: #f5f5f5;
+        }
+        .search-result-list li a {
+            text-decoration: none;
+            color: #333;
+            display: block;
+        }
+        .title {
+            font-weight: bold;
+        }
+        .sub-title {
+            color: #666;
+            font-size: 0.9em;
+        }
+        .parts-list {
+            min-height: 100px;
+            border: 1px dashed #ccc;
+            border-radius: 8px;
+            padding: 15px;
+            margin: 15px 0;
+        }
+        .part-item {
+            display: flex;
+            justify-content: space-between;
+            padding: 8px 0;
+            border-bottom: 1px solid #eee;
+        }
+        .remove-part {
+            color: red;
+            background: none;
+            border: none;
+            cursor: pointer;
+        }
+        .total {
+            font-size: 20px;
+            font-weight: bold;
+            text-align: center;
+            margin: 20px 0;
+        }
+        .btn {
+            width: 100%;
+            padding: 12px;
+            background-color: #007AFF;
+            color: white;
+            border: none;
+            border-radius: 8px;
+            font-size: 16px;
+            cursor: pointer;
+        }
+        @media (max-width: 480px) {
+            .container {
+                padding: 15px;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>Розрахунок вартості<br>фарбування</h1>
+        
+        <fieldset>
+            <div class="drop-search" id="searchContainer">
+                <input type="text" name="searchajax" autocomplete="off" placeholder="Пошук деталі..." id="searchInput">
+                <ul class="search-result-list" id="searchResults">
+                    <!-- Результати пошуку з'являться тут -->
+                </ul>
+            </div>
+        </fieldset>
+        
+        <div class="options">
+            <label><input type="checkbox" id="expensive-color"> Дорогий колір (1.5x)</label><br>
+            <label><input type="checkbox" id="under-dashboard"> Під прибор (2x)</label>
+        </div>
+        
+        <div class="parts-list" id="partsList">
+            <p style="color: #999; text-align: center;">Додайте деталі через пошук</p>
+        </div>
+        
+        <div class="total" id="totalPrice">Загальна вартість: 0 грн</div>
+        
+        <button class="btn" id="generatePdf">Формувати звіт (PDF)</button>
+    </div>
+
+    <script>
+        // Дані про деталі
+        const partsData = [
+            { name: "Передній бампер", price: 1500 },
+            { name: "Задній бампер", price: 1400 },
+            { name: "Капот", price: 2000 },
+            { name: "Крило переднє", price: 1200 },
+            { name: "Крило заднє", price: 1100 },
+            { name: "Двері (1 шт)", price: 1800 },
+            { name: "Кришка багажника", price: 1600 },
+            { name: "Дах", price: 2500 },
+            { name: "Дзеркало (1 шт)", price: 800 }
+        ];
+
+        // Елементи DOM
+        const searchInput = document.getElementById('searchInput');
+        const searchContainer = document.getElementById('searchContainer');
+        const searchResults = document.getElementById('searchResults');
+        const partsList = document.getElementById('partsList');
+        const totalPrice = document.getElementById('totalPrice');
+        let selectedParts = [];
+
+        // Обробник пошуку
+        searchInput.addEventListener('input', function() {
+            const searchTerm = this.value.trim().toLowerCase();
+            searchResults.innerHTML = '';
+            
+            if (searchTerm.length < 2) {
+                searchContainer.classList.remove('search-focus');
+                return;
+            }
+            
+            const filteredParts = partsData.filter(part => 
+                part.name.toLowerCase().includes(searchTerm)
+            );
+            
+            if (filteredParts.length === 0) {
+                searchResults.innerHTML = '<li>Нічого не знайдено</li>';
+            } else {
+                filteredParts.forEach(part => {
+                    const li = document.createElement('li');
+                    li.innerHTML = `<a href="javascript:void(0)"><strong class="title">${part.name}</strong> <strong class="sub-title">${part.price} грн</strong></a>`;
+                    li.addEventListener('click', () => {
+                        selectedParts.push(part);
+                        updatePartsList();
+                        calculateTotal();
+                        searchInput.value = '';
+                        searchContainer.classList.remove('search-focus');
+                    });
+                    searchResults.appendChild(li);
+                });
+            }
+            
+            searchContainer.classList.add('search-focus');
+        });
+
+        // Закриття результату пошуку при кліку поза ним
+        document.addEventListener('click', function(e) {
+            if (!e.target.closest('.drop-search')) {
+                searchContainer.classList.remove('search-focus');
+            }
+        });
+
+        // Оновлення списку деталей
+        function updatePartsList() {
+            if (selectedParts.length === 0) {
+                partsList.innerHTML = '<p style="color: #999; text-align: center;">Додайте деталі через пошук</p>';
+                return;
+            }
+            
+            partsList.innerHTML = '';
+            selectedParts.forEach((part, index) => {
+                const partEl = document.createElement('div');
+                partEl.className = 'part-item';
+                partEl.innerHTML = `
+                    <span>${part.name}</span>
+                    <span>
+                        ${part.price} грн
+                        <button class="remove-part" data-index="${index}">×</button>
+                    </span>
+                `;
+                partsList.appendChild(partEl);
+            });
+            
+            // Додаємо обробники видалення
+            document.querySelectorAll('.remove-part').forEach(btn => {
+                btn.addEventListener('click', function() {
+                    selectedParts.splice(parseInt(this.dataset.index), 1);
+                    updatePartsList();
+                    calculateTotal();
+                });
+            });
+        }
+
+        // Розрахунок загальної суми
+        function calculateTotal() {
+            let total = selectedParts.reduce((sum, part) => sum + part.price, 0);
+            
+            if (document.getElementById('expensive-color').checked) total *= 1.5;
+            if (document.getElementById('under-dashboard').checked) total *= 2;
+            
+            totalPrice.textContent = `Загальна вартість: ${total.toFixed(2)} грн`;
+        }
+
+        // Генерація PDF
+        document.getElementById('generatePdf').addEventListener('click', function() {
+            if (selectedParts.length === 0) {
+                alert('Додайте хоча б одну деталь!');
+                return;
+            }
+            
+            const { jsPDF } = window.jspdf;
+            const doc = new jsPDF();
+            
+            doc.setFontSize(18);
+            doc.text('Кошторис на фарбування', 105, 20, { align: 'center' });
+            
+            let y = 40;
+            selectedParts.forEach(part => {
+                doc.text(`${part.name}: ${part.price} грн`, 20, y);
+                y += 10;
+            });
+            
+            doc.setFontSize(14);
+            doc.text(totalPrice.textContent, 105, y + 10, { align: 'center' });
+            
+            doc.save('кошторис.pdf');
+        });
+    </script>
+</body>
+</html>
