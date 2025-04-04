@@ -8,142 +8,188 @@
     <style>
         * {
             box-sizing: border-box;
-            font-family: 'Segoe UI', Arial, sans-serif;
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
         }
         body {
             background-color: #f5f5f5;
             margin: 0;
             padding: 16px;
             color: #333;
+            line-height: 1.5;
         }
         .container {
             max-width: 500px;
             margin: 0 auto;
             background: white;
             padding: 20px;
-            border-radius: 10px;
-            box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+            border-radius: 12px;
+            box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
         }
         h1 {
             font-size: 22px;
             text-align: center;
             margin-bottom: 20px;
+            color: #2c3e50;
+            font-weight: 600;
         }
-        fieldset {
-            border: none;
-            padding: 0;
-            margin: 0;
-        }
-        .drop-search {
+        .custom-select {
             position: relative;
+            margin-bottom: 15px;
         }
-        .drop-search input {
+        .select-btn {
             width: 100%;
-            padding: 12px;
+            padding: 14px 16px;
             border: 1px solid #ddd;
-            border-radius: 8px;
+            border-radius: 10px;
             font-size: 16px;
+            text-align: left;
+            background-color: white;
+            cursor: pointer;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
         }
-        .search-result-list {
-            display: none;
+        .dropdown {
             position: absolute;
             width: 100%;
-            max-height: 300px;
+            max-height: 250px;
             overflow-y: auto;
             background: white;
             border: 1px solid #ddd;
-            border-radius: 8px;
+            border-radius: 10px;
             margin-top: 5px;
             z-index: 100;
-            box-shadow: 0 4px 12px rgba(0,0,0,0.1);
-            padding: 0;
-            list-style: none;
+            display: none;
+            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
         }
-        .search-focus .search-result-list {
+        .dropdown.show {
             display: block;
         }
-        .search-result-list li {
-            padding: 10px;
+        .search-box {
+            padding: 12px 16px;
             border-bottom: 1px solid #eee;
+            position: sticky;
+            top: 0;
+            background: white;
+        }
+        .search-box input {
+            width: 100%;
+            padding: 8px 12px;
+            border: 1px solid #ddd;
+            border-radius: 8px;
+            font-size: 15px;
+        }
+        .options {
+            padding: 8px 0;
+        }
+        .option {
+            padding: 10px 16px;
             cursor: pointer;
         }
-        .search-result-list li:hover {
+        .option:hover {
             background-color: #f5f5f5;
         }
-        .search-result-list li a {
-            text-decoration: none;
-            color: #333;
-            display: block;
+        .options {
+            margin: 15px 0;
         }
-        .title {
-            font-weight: bold;
+        .option-item {
+            margin-bottom: 12px;
+            display: flex;
+            align-items: center;
         }
-        .sub-title {
-            color: #666;
-            font-size: 0.9em;
+        .option-item input {
+            margin-right: 12px;
+            width: 18px;
+            height: 18px;
         }
         .parts-list {
-            min-height: 100px;
-            border: 1px dashed #ccc;
-            border-radius: 8px;
-            padding: 15px;
-            margin: 15px 0;
+            min-height: 120px;
+            border: 1px dashed #ddd;
+            border-radius: 10px;
+            padding: 16px;
+            margin-bottom: 20px;
         }
         .part-item {
             display: flex;
             justify-content: space-between;
-            padding: 8px 0;
+            padding: 10px 0;
             border-bottom: 1px solid #eee;
         }
         .remove-part {
-            color: red;
+            color: #e74c3c;
             background: none;
             border: none;
+            font-size: 18px;
             cursor: pointer;
+            padding: 0 5px;
         }
         .total {
             font-size: 20px;
             font-weight: bold;
             text-align: center;
-            margin: 20px 0;
+            margin: 25px 0;
+            padding: 12px;
+            background: #f8f9fa;
+            border-radius: 10px;
         }
         .btn {
             width: 100%;
-            padding: 12px;
-            background-color: #007AFF;
+            padding: 14px;
+            background-color: #007aff;
             color: white;
             border: none;
-            border-radius: 8px;
-            font-size: 16px;
+            border-radius: 10px;
+            font-size: 17px;
+            font-weight: 500;
             cursor: pointer;
+        }
+        .empty-state {
+            color: #999;
+            text-align: center;
+            padding: 20px 0;
         }
         @media (max-width: 480px) {
             .container {
-                padding: 15px;
+                padding: 16px;
+            }
+            .select-btn, .search-box input, .btn {
+                padding: 12px 16px;
             }
         }
     </style>
 </head>
 <body>
     <div class="container">
-        <h1>Розрахунок вартості<br>фарбування</h1>
+        <h1>Розрахунок вартості фарбування</h1>
         
-        <fieldset>
-            <div class="drop-search" id="searchContainer">
-                <input type="text" name="searchajax" autocomplete="off" placeholder="Пошук деталі..." id="searchInput">
-                <ul class="search-result-list" id="searchResults">
-                    <!-- Результати пошуку з'являться тут -->
-                </ul>
+        <div class="custom-select">
+            <div class="select-btn" id="selectBtn">
+                <span>Оберіть деталь...</span>
+                <span>▼</span>
             </div>
-        </fieldset>
+            <div class="dropdown" id="dropdown">
+                <div class="search-box">
+                    <input type="text" placeholder="Пошук..." id="searchInput">
+                </div>
+                <div class="options" id="options">
+                    <!-- Опції будуть додані через JS -->
+                </div>
+            </div>
+        </div>
         
         <div class="options">
-            <label><input type="checkbox" id="expensive-color"> Дорогий колір (1.5x)</label><br>
-            <label><input type="checkbox" id="under-dashboard"> Під прибор (2x)</label>
+            <div class="option-item">
+                <input type="checkbox" id="expensive-color"> 
+                <label for="expensive-color">Дорогий колір (1.5x)</label>
+            </div>
+            <div class="option-item">
+                <input type="checkbox" id="under-dashboard"> 
+                <label for="under-dashboard">Під прибор (2x)</label>
+            </div>
         </div>
         
         <div class="parts-list" id="partsList">
-            <p style="color: #999; text-align: center;">Додайте деталі через пошук</p>
+            <div class="empty-state">Додайте деталі зі списку</div>
         </div>
         
         <div class="total" id="totalPrice">Загальна вартість: 0 грн</div>
@@ -166,79 +212,68 @@
         ];
 
         // Елементи DOM
+        const selectBtn = document.getElementById('selectBtn');
+        const dropdown = document.getElementById('dropdown');
         const searchInput = document.getElementById('searchInput');
-        const searchContainer = document.getElementById('searchContainer');
-        const searchResults = document.getElementById('searchResults');
+        const optionsContainer = document.getElementById('options');
         const partsList = document.getElementById('partsList');
         const totalPrice = document.getElementById('totalPrice');
+        const expensiveColor = document.getElementById('expensive-color');
+        const underDashboard = document.getElementById('under-dashboard');
+        const generatePdfBtn = document.getElementById('generatePdf');
         let selectedParts = [];
 
-        // Обробник пошуку
-        searchInput.addEventListener('input', function() {
-            const searchTerm = this.value.trim().toLowerCase();
-            searchResults.innerHTML = '';
-            
-            if (searchTerm.length < 2) {
-                searchContainer.classList.remove('search-focus');
-                return;
-            }
-            
+        // Заповнити список опцій
+        function populateOptions(filter = '') {
+            optionsContainer.innerHTML = '';
             const filteredParts = partsData.filter(part => 
-                part.name.toLowerCase().includes(searchTerm)
+                part.name.toLowerCase().includes(filter.toLowerCase())
             );
             
             if (filteredParts.length === 0) {
-                searchResults.innerHTML = '<li>Нічого не знайдено</li>';
-            } else {
-                filteredParts.forEach(part => {
-                    const li = document.createElement('li');
-                    li.innerHTML = `<a href="javascript:void(0)"><strong class="title">${part.name}</strong> <strong class="sub-title">${part.price} грн</strong></a>`;
-                    li.addEventListener('click', () => {
-                        selectedParts.push(part);
-                        updatePartsList();
-                        calculateTotal();
-                        searchInput.value = '';
-                        searchContainer.classList.remove('search-focus');
-                    });
-                    searchResults.appendChild(li);
-                });
+                optionsContainer.innerHTML = '<div class="option">Нічого не знайдено</div>';
+                return;
             }
             
-            searchContainer.classList.add('search-focus');
-        });
+            filteredParts.forEach(part => {
+                const option = document.createElement('div');
+                option.className = 'option';
+                option.textContent = `${part.name} (${part.price} грн)`;
+                option.addEventListener('click', () => {
+                    selectedParts.push(part);
+                    updatePartsList();
+                    calculateTotal();
+                    dropdown.classList.remove('show');
+                    selectBtn.querySelector('span').textContent = 'Оберіть деталь...';
+                });
+                optionsContainer.appendChild(option);
+            });
+        }
 
-        // Закриття результату пошуку при кліку поза ним
-        document.addEventListener('click', function(e) {
-            if (!e.target.closest('.drop-search')) {
-                searchContainer.classList.remove('search-focus');
-            }
-        });
-
-        // Оновлення списку деталей
+        // Оновити список деталей
         function updatePartsList() {
             if (selectedParts.length === 0) {
-                partsList.innerHTML = '<p style="color: #999; text-align: center;">Додайте деталі через пошук</p>';
+                partsList.innerHTML = '<div class="empty-state">Додайте деталі зі списку</div>';
                 return;
             }
             
             partsList.innerHTML = '';
             selectedParts.forEach((part, index) => {
-                const partEl = document.createElement('div');
-                partEl.className = 'part-item';
-                partEl.innerHTML = `
+                const partElement = document.createElement('div');
+                partElement.className = 'part-item';
+                partElement.innerHTML = `
                     <span>${part.name}</span>
                     <span>
-                        ${part.price} грн
+                        ${part.price} грн 
                         <button class="remove-part" data-index="${index}">×</button>
                     </span>
                 `;
-                partsList.appendChild(partEl);
+                partsList.appendChild(partElement);
             });
-            
-            // Додаємо обробники видалення
+
             document.querySelectorAll('.remove-part').forEach(btn => {
                 btn.addEventListener('click', function() {
-                    selectedParts.splice(parseInt(this.dataset.index), 1);
+                    selectedParts.splice(parseInt(this.getAttribute('data-index')), 1);
                     updatePartsList();
                     calculateTotal();
                 });
@@ -249,25 +284,26 @@
         function calculateTotal() {
             let total = selectedParts.reduce((sum, part) => sum + part.price, 0);
             
-            if (document.getElementById('expensive-color').checked) total *= 1.5;
-            if (document.getElementById('under-dashboard').checked) total *= 2;
+            if (expensiveColor.checked) total *= 1.5;
+            if (underDashboard.checked) total *= 2;
             
             totalPrice.textContent = `Загальна вартість: ${total.toFixed(2)} грн`;
         }
 
         // Генерація PDF
-        document.getElementById('generatePdf').addEventListener('click', function() {
+        generatePdfBtn.addEventListener('click', function() {
             if (selectedParts.length === 0) {
-                alert('Додайте хоча б одну деталь!');
+                alert("Додайте хоча б одну деталь!");
                 return;
             }
-            
+
             const { jsPDF } = window.jspdf;
             const doc = new jsPDF();
             
             doc.setFontSize(18);
             doc.text('Кошторис на фарбування', 105, 20, { align: 'center' });
             
+            doc.setFontSize(12);
             let y = 40;
             selectedParts.forEach(part => {
                 doc.text(`${part.name}: ${part.price} грн`, 20, y);
@@ -275,10 +311,35 @@
             });
             
             doc.setFontSize(14);
+            doc.setFont(undefined, 'bold');
             doc.text(totalPrice.textContent, 105, y + 10, { align: 'center' });
             
-            doc.save('кошторис.pdf');
+            doc.save('кошторис_фарбування.pdf');
         });
+
+        // Обробники подій
+        selectBtn.addEventListener('click', () => {
+            dropdown.classList.toggle('show');
+            if (dropdown.classList.contains('show')) {
+                searchInput.focus();
+            }
+        });
+
+        searchInput.addEventListener('input', () => {
+            populateOptions(searchInput.value);
+        });
+
+        document.addEventListener('click', (e) => {
+            if (!selectBtn.contains(e.target) && !dropdown.contains(e.target)) {
+                dropdown.classList.remove('show');
+            }
+        });
+
+        expensiveColor.addEventListener('change', calculateTotal);
+        underDashboard.addEventListener('change', calculateTotal);
+
+        // Ініціалізація
+        populateOptions();
     </script>
 </body>
 </html>
