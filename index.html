@@ -3,12 +3,18 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Калькулятор фарбування авто</title>
+    <title>Розрахунок вартості фарбування</title> 
+		<!--h2 видалиш з css-->
     <style>
         * {
             box-sizing: border-box;
             font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
         }
+			<!--h2 видалиш з css-->
+		h2 {
+            text-align: center;
+        }
+		
         body {
             background-color: #f5f5f5;
             margin: 0;
@@ -30,7 +36,7 @@
             margin-bottom: 20px;
             color: #2c3e50;
             font-weight: 600;
-        }
+        } 
         .custom-select {
             position: relative;
             margin-bottom: 15px;
@@ -149,8 +155,12 @@
 </head>
 <body>
     <div class="container">
-        <h1>Розрахунок вартості фарбування</h1>
+
+		<h2>з тебе пиво)))</h2>
         
+	
+        <h1>Розрахунок вартості фарбування</h1>
+		
         <div class="custom-select">
             <div class="select-btn" id="selectBtn">
                 <span>Оберіть деталь...</span>
@@ -161,7 +171,7 @@
                     <input type="text" placeholder="Пошук..." id="searchInput">
                 </div>
                 <div class="options" id="options">
-                    <!-- Опції будуть додані через JS -->
+                    
                 </div>
             </div>
         </div>
@@ -186,8 +196,11 @@
     </div>
 
     <script>
-        // Дані про деталі
+	
+        // заповни свій список
+		
         const partsData = [
+            { name: "з тебе пиво", price: 999999 },
             { name: "Передній бампер", price: 1500 },
             { name: "Задній бампер", price: 1400 },
             { name: "Капот", price: 2000 },
@@ -199,7 +212,6 @@
             { name: "Дзеркало (1 шт)", price: 800 }
         ];
 
-        // Елементи DOM
         const selectBtn = document.getElementById('selectBtn');
         const dropdown = document.getElementById('dropdown');
         const searchInput = document.getElementById('searchInput');
@@ -211,12 +223,10 @@
         const errorMessage = document.getElementById('errorMessage');
         let selectedParts = [];
 
-        // Перевірка на наявність деталі в списку
         function isPartAlreadyAdded(partName) {
             return selectedParts.some(part => part.name === partName);
         }
 
-        // Заповнити список опцій
         function populateOptions(filter = '') {
             optionsContainer.innerHTML = '';
             const filteredParts = partsData.filter(part => 
@@ -251,7 +261,6 @@
             });
         }
 
-        // Оновити список деталей
         function updatePartsList() {
             if (selectedParts.length === 0) {
                 partsList.innerHTML = '<div class="empty-state">Додайте деталі зі списку</div>';
@@ -281,7 +290,6 @@
             });
         }
 
-        // Розрахунок загальної суми
         function calculateTotal() {
             let total = selectedParts.reduce((sum, part) => sum + part.price, 0);
             
@@ -291,7 +299,6 @@
             totalPrice.textContent = `Загальна вартість: ${total.toFixed(2)} грн`;
         }
 
-        // Обробники подій
         selectBtn.addEventListener('click', () => {
             dropdown.classList.toggle('show');
             if (dropdown.classList.contains('show')) {
@@ -312,7 +319,6 @@
         expensiveColor.addEventListener('change', calculateTotal);
         underDashboard.addEventListener('change', calculateTotal);
 
-        // Ініціалізація
         populateOptions();
     </script>
 </body>
